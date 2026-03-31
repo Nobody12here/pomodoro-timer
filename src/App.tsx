@@ -1,30 +1,43 @@
-import { timeEnd } from "console";
 import "./index.css";
 import {
   CircleCheck,
   EllipsisVertical,
   PlusCircle,
 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 
 export function App() {
   const [timer, setTimer] = useState<number>(25 * 60) //timer should be in seconds so 25*60
+  const [isRunning, setIsRunning] = useState<boolean>(false);
   const intervalRef = useRef<Timer | null>(null);
+  useEffect(() => {
+    return () => {
+      console.log("Cleanup function called")
+      clearInterval(intervalRef.current ?? undefined)
+    }
+  }, [])
+  function pauseTimer() {
+    if (!intervalRef.current) return;
+    clearInterval(intervalRef.current);
+    setIsRunning(false)
+  }
   function startTimer() {
-    if (intervalRef.current) return;
-
+    if (intervalRef.current && isRunning) return;
+    setIsRunning(true)
     intervalRef.current = setInterval(() => setTimer((prev) => {
       console.log(prev)
       if (prev < 1) {
-          clearInterval(intervalRef.current ?? undefined);
-          intervalRef.current = null;
-          return 0
+        clearInterval(intervalRef.current ?? undefined);
+        intervalRef.current = null;
+        setIsRunning(false)
+        return 0
       }
       return prev - 1
-    }), 100,)
-   
+    }), 100)
+
   }
+
 
   return (
     <main className="min-h-screen bg-[#ba4949] text-white">
@@ -48,11 +61,19 @@ export function App() {
           <p className="mb-7 text-[100px] leading-[0.9] font-bold tracking-[0.02em] text-[#f8f8f8]">
             {/* divide seconds by 60seconds to get minutes 
             and find the remainder (modulus) to get the seconds */}
-            {Math.floor(timer / 60)}:{timer % 60}
+            {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2,'0')}
           </p>
+          {!isRunning ?
+            <button onClick={() => startTimer()} className="mb-2 w-64 rounded-md border-b-8 border-[#0000001f] bg-white py-4 text-[22px] leading-none font-semibold tracking-[0.02em] text-[#ba4949]">
+              START
+            </button> :
 
-          <button onClick={() => startTimer()} className="mb-2 w-64 rounded-md border-b-8 border-[#0000001f] bg-white py-4 text-[22px] leading-none font-semibold tracking-[0.02em] text-[#ba4949]">
-            START
+            <button onClick={() => pauseTimer()} className="mb-2 w-64 rounded-md border-b-8 border-[#0000001f] bg-white py-4 text-[22px] leading-none font-semibold tracking-[0.02em] text-[#ba4949]">
+              PAUSE
+            </button>
+          }
+          <button onClick={() => setTimer(25 * 60)} className="mb-2 w-64 rounded-md border-b-8 border-[#0000001f] bg-white py-4 text-[22px] leading-none font-semibold tracking-[0.02em] text-[#ba4949]">
+            RESET
           </button>
         </section>
         {/* Tasks List */}
