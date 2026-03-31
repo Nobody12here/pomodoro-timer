@@ -1,11 +1,31 @@
+import { timeEnd } from "console";
 import "./index.css";
 import {
   CircleCheck,
   EllipsisVertical,
   PlusCircle,
 } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+
 
 export function App() {
+  const [timer, setTimer] = useState<number>(25 * 60) //timer should be in seconds so 25*60
+  const intervalRef = useRef<Timer | null>(null);
+  function startTimer() {
+    if (intervalRef.current) return;
+
+    intervalRef.current = setInterval(() => setTimer((prev) => {
+      console.log(prev)
+      if (prev < 1) {
+          clearInterval(intervalRef.current ?? undefined);
+          intervalRef.current = null;
+          return 0
+      }
+      return prev - 1
+    }), 100,)
+   
+  }
+
   return (
     <main className="min-h-screen bg-[#ba4949] text-white">
       <div className="mx-auto max-w-115 px-6 pt-5 pb-8">
@@ -26,10 +46,12 @@ export function App() {
           </div>
 
           <p className="mb-7 text-[100px] leading-[0.9] font-bold tracking-[0.02em] text-[#f8f8f8]">
-            25:00
+            {/* divide seconds by 60seconds to get minutes 
+            and find the remainder (modulus) to get the seconds */}
+            {Math.floor(timer / 60)}:{timer % 60}
           </p>
 
-          <button className="mb-2 w-64 rounded-md border-b-8 border-[#0000001f] bg-white py-4 text-[22px] leading-none font-semibold tracking-[0.02em] text-[#ba4949]">
+          <button onClick={() => startTimer()} className="mb-2 w-64 rounded-md border-b-8 border-[#0000001f] bg-white py-4 text-[22px] leading-none font-semibold tracking-[0.02em] text-[#ba4949]">
             START
           </button>
         </section>
