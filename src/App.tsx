@@ -8,7 +8,8 @@ import { useState, useRef, useEffect } from "react";
 
 
 export function App() {
-  const [timer, setTimer] = useState<number>(25 * 60) //timer should be in seconds so 25*60
+  const [mode,setMode] = useState<'pomo'|'shortBreak'|'longBreak'>('pomo');
+  const [timer, setTimer] = useState<number>(2 * 60) //timer should be in seconds so 25*60
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const intervalRef = useRef<Timer | null>(null);
   useEffect(() => {
@@ -61,7 +62,7 @@ export function App() {
           <p className="mb-7 text-[100px] leading-[0.9] font-bold tracking-[0.02em] text-[#f8f8f8]">
             {/* divide seconds by 60seconds to get minutes 
             and find the remainder (modulus) to get the seconds */}
-            {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2,'0')}
+            {Math.floor(timer / 60).toString().padStart(2,'0')}:{(timer % 60).toString().padStart(2,'0')}
           </p>
           {!isRunning ?
             <button onClick={() => startTimer()} className="mb-2 w-64 rounded-md border-b-8 border-[#0000001f] bg-white py-4 text-[22px] leading-none font-semibold tracking-[0.02em] text-[#ba4949]">
