@@ -1,4 +1,4 @@
-import "./index.css";
+import "index.css"
 import {
   CircleCheck,
   EllipsisVertical,
@@ -8,10 +8,32 @@ import { useState, useRef, useEffect } from "react";
 
 
 export function App() {
-  const [mode,setMode] = useState<'pomo'|'shortBreak'|'longBreak'>('pomo');
+  const [mode, setMode] = useState<'pomo' | 'shortBreak' | 'longBreak'>('pomo');
   const [timer, setTimer] = useState<number>(2 * 60) //timer should be in seconds so 25*60
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const intervalRef = useRef<Timer | null>(null);
+
+  function changeMode(mode: 'pomo' | 'shortBreak' | 'longBreak') {
+    //First stop the timer if it's running 
+    if (isRunning) {
+      clearInterval(intervalRef.current ?? undefined);
+      intervalRef.current = null;
+      setIsRunning(false)
+    }
+    if (mode === 'shortBreak') {
+      setTimer(5 * 60) //5 
+    }
+    else if (mode === 'longBreak') {
+      setTimer(15 * 60) //15 minutes
+    }
+    else {
+      setTimer(25 * 60)
+    }
+    setMode(mode);
+    console.log("Mode changed: ", mode);
+  }
+
+
   useEffect(() => {
     return () => {
       console.log("Cleanup function called")
@@ -27,7 +49,7 @@ export function App() {
     if (intervalRef.current && isRunning) return;
     setIsRunning(true)
     intervalRef.current = setInterval(() => setTimer((prev) => {
-      console.log(prev)
+      console.log(intervalRef)
       if (prev < 1) {
         clearInterval(intervalRef.current ?? undefined);
         intervalRef.current = null;
@@ -35,7 +57,7 @@ export function App() {
         return 0
       }
       return prev - 1
-    }), 100)
+    }), 1000)
 
   }
 
@@ -54,15 +76,27 @@ export function App() {
         {/* Timer */}
         <section className="mx-auto max-w-108 rounded-2xl bg-[#ffffff1a] p-6 text-center">
           <div className="mb-8 flex items-center justify-center gap-3 text-[18px] font-medium text-[#ffe8e8]">
-            <button className="rounded-md bg-[#0000001a] px-4 py-1.5 font-semibold text-white">Pomodoro</button>
-            <button className="px-2 py-1.5">Short Break</button>
-            <button className="px-2 py-1.5">Long Break</button>
+            <button className={`${mode === 'pomo' ?
+              "rounded-md bg-[#0000001a] px-4 py-1.5 font-semibold text-white"
+              :
+              "px-2 py-1.5"
+              }`} onClick={() => changeMode("pomo")}>Pomodoro</button>
+            <button className={`${mode === 'longBreak' ?
+              "rounded-md bg-[#0000001a] px-4 py-1.5 font-semibold text-white"
+              :
+              "px-2 py-1.5"
+              }`} onClick={() => { changeMode("longBreak") }}>Long Break</button>
+            <button className={`${mode === 'shortBreak' ?
+              "rounded-md bg-[#0000001a] px-4 py-1.5 font-semibold text-white"
+              :
+              "px-2 py-1.5"
+              }`} onClick={() => { changeMode("shortBreak") }}>Short Break</button>
           </div>
 
           <p className="mb-7 text-[100px] leading-[0.9] font-bold tracking-[0.02em] text-[#f8f8f8]">
             {/* divide seconds by 60seconds to get minutes 
             and find the remainder (modulus) to get the seconds */}
-            {Math.floor(timer / 60).toString().padStart(2,'0')}:{(timer % 60).toString().padStart(2,'0')}
+            {Math.floor(timer / 60).toString().padStart(2, '0')}:{(timer % 60).toString().padStart(2, '0')}
           </p>
           {!isRunning ?
             <button onClick={() => startTimer()} className="mb-2 w-64 rounded-md border-b-8 border-[#0000001f] bg-white py-4 text-[22px] leading-none font-semibold tracking-[0.02em] text-[#ba4949]">
@@ -73,7 +107,7 @@ export function App() {
               PAUSE
             </button>
           }
-          <button onClick={() => setTimer(25 * 60)} className="mb-2 w-64 rounded-md border-b-8 border-[#0000001f] bg-white py-4 text-[22px] leading-none font-semibold tracking-[0.02em] text-[#ba4949]">
+          <button onClick={() => changeMode(mode)} className="mb-2 w-64 rounded-md border-b-8 border-[#0000001f] bg-white py-4 text-[22px] leading-none font-semibold tracking-[0.02em] text-[#ba4949]">
             RESET
           </button>
         </section>
