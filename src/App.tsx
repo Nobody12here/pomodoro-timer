@@ -1,13 +1,20 @@
-import "index.css"
+import "./index.css"
+import Beep from "./assets/audio/beep.mp3";
 import {
+  ChartGantt,
   CircleCheck,
   EllipsisVertical,
   PlusCircle,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-
+type Task = {
+  id: string,
+  name: string,
+  completed: boolean
+}
 export function App() {
+  const [tasks, setTasks] = useState<Task[]>([{'id':'1','name':'test','completed':false}]);
   const [mode, setMode] = useState<'pomo' | 'shortBreak' | 'longBreak'>('pomo');
   const [timer, setTimer] = useState<number>(2 * 60) //timer should be in seconds so 25*60
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -30,7 +37,6 @@ export function App() {
       setTimer(25 * 60)
     }
     setMode(mode);
-    console.log("Mode changed: ", mode);
   }
 
 
@@ -43,21 +49,27 @@ export function App() {
   function pauseTimer() {
     if (!intervalRef.current) return;
     clearInterval(intervalRef.current);
+    intervalRef.current = null;
+
     setIsRunning(false)
   }
   function startTimer() {
+
     if (intervalRef.current && isRunning) return;
     setIsRunning(true)
     intervalRef.current = setInterval(() => setTimer((prev) => {
-      console.log(intervalRef)
       if (prev < 1) {
         clearInterval(intervalRef.current ?? undefined);
         intervalRef.current = null;
-        setIsRunning(false)
+        setIsRunning(false);
+        let audio = new Audio(Beep);
+        audio.play()
+        alert("Times up take a break!");
+        changeMode("shortBreak");
         return 0
       }
       return prev - 1
-    }), 1000)
+    }), 100)
 
   }
 
@@ -112,9 +124,50 @@ export function App() {
           </button>
         </section>
         {/* Tasks List */}
-        <section className="mx-auto mt-4 max-w-108 text-center">
-          <p className="text-[16px] text-[#ffd7d7]">#1</p>
-          <p className="mt-1 text-[22px] font-semibold">Time to focus!</p>
+        <section className="mx-auto mt-8 max-w-108">
+          <div className="space-y-3">
+            {
+              tasks.length!==0 ? 
+              tasks.map((task) => {
+                return (
+                  <div key={task.id} className="flex items-center gap-3 rounded-lg bg-[#ffffff1a] p-4 hover:bg-[#ffffff26] transition-colors">
+                    <div className="shrink-0">
+                      <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                        task.completed 
+                          ? 'bg-white border-white' 
+                          : 'border-[#ffe8e8]'
+                      }`}>
+                        {task.completed && (
+                          <CircleCheck className="h-4 w-4 text-[#ba4949]" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className={`text-[14px] font-medium ${
+                        task.completed 
+                          ? 'text-[#ffb4b4] line-through' 
+                          : 'text-[#ffd7d7]'
+                      }`}>
+                        Task #{task.id}
+                      </p>
+                      <p className={`text-[16px] font-semibold ${
+                        task.completed 
+                          ? 'text-[#ffb4b4] line-through' 
+                          : 'text-white'
+                      }`}>
+                        {task.name}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })
+              :
+              <div className="rounded-lg bg-[#ffffff1a] p-8 text-center">
+                <ChartGantt className="h-8 w-8 mx-auto mb-2 text-[#ffe8e8] opacity-50" />
+                <p className="text-[#ffb4b4]">No tasks added yet</p>
+              </div>
+            }
+          </div>
         </section>
         {/* Add tasks */}
         <section className="mx-auto mt-8 max-w-108">
