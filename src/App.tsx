@@ -16,9 +16,10 @@ type Task = {
   completed: boolean;
 };
 export function App() {
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: "1", name: "test", completed: false },
-  ]);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const saved = localStorage.getItem("tasks");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [mode, setMode] = useState<"pomo" | "shortBreak" | "longBreak">("pomo");
   const [timer, setTimer] = useState<number>(2 * 60); //timer should be in seconds so 25*60
   const [taskText, setTaskText] = useState<string>("");
@@ -26,7 +27,17 @@ export function App() {
   const [showAddTaskModal, setShowAddTaskModal] = useState<boolean>(false);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  let tasksCompleted = tasks.filter((_task) => _task.completed).length;
 
+  function taskStatusUpdate(status: boolean, taskId: string) {
+    const updatedTasks = tasks.map((_task) => {
+      if (_task.id == taskId) {
+        _task.completed = status;
+      }
+      return _task;
+    });
+    setTasks(updatedTasks);
+  }
   function handleAddTask(task: string, taskId?: string) {
     if (taskId) {
       const updatedTasks = tasks.map((_task) => {
@@ -52,6 +63,7 @@ export function App() {
     setTaskText("");
     return;
   }
+
   function changeMode(mode: "pomo" | "shortBreak" | "longBreak") {
     //First stop the timer if it's running
     if (isRunning) {
@@ -68,6 +80,12 @@ export function App() {
     }
     setMode(mode);
   }
+
+  //Use effect for storing the tasks to local storage
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    return () => {};
+  }, [tasks]);
 
   useEffect(() => {
     return () => {
@@ -189,6 +207,9 @@ export function App() {
         </section>
         {/* Tasks List */}
         <section className="mx-auto mt-8 max-w-108">
+          <span>
+            {tasksCompleted} / {tasks.length}
+          </span>
           <div className="space-y-3">
             {tasks.length !== 0 ? (
               tasks.map((task) => {
@@ -199,6 +220,9 @@ export function App() {
                   >
                     <div className="shrink-0">
                       <div
+                        onClick={() => {
+                          taskStatusUpdate(!task.completed, task.id);
+                        }}
                         className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
                           task.completed
                             ? "bg-white border-white"
