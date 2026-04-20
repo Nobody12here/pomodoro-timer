@@ -27,8 +27,8 @@ export function App() {
   const [showAddTaskModal, setShowAddTaskModal] = useState<boolean>(false);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  useKeyboardShortcut(' ',()=>{pauseTimer()})
-  useKeyboardShortcut('s',()=>{startTimer()})
+  useKeyboardShortcut(' ',()=>{startTimer()})
+  
   useKeyboardShortcut('r',()=>{changeMode(mode)})
   let tasksCompleted = tasks.filter((_task) => _task.completed).length;
 
@@ -104,7 +104,10 @@ export function App() {
     setIsRunning(false);
   }
   function startTimer() {
-    if (intervalRef.current && isRunning) return;
+    if (intervalRef.current && isRunning) {
+      pauseTimer();
+      return
+    };
     setIsRunning(true);
     intervalRef.current = setInterval(
       () =>
