@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-
+import { useKeyboardShortcut } from "./hooks/useKeyboardShortcut";
 type Task = {
   id: string;
   name: string;
@@ -27,6 +27,9 @@ export function App() {
   const [showAddTaskModal, setShowAddTaskModal] = useState<boolean>(false);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  useKeyboardShortcut(' ',()=>{pauseTimer()})
+  useKeyboardShortcut('s',()=>{startTimer()})
+  useKeyboardShortcut('r',()=>{changeMode(mode)})
   let tasksCompleted = tasks.filter((_task) => _task.completed).length;
 
   function taskStatusUpdate(status: boolean, taskId: string) {
